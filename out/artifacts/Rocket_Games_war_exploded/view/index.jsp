@@ -10,7 +10,7 @@
 
 <head>
     <title>Rocket Games</title>
-    <link rel="stylesheet" href="../stile.css" type="text/css">
+    <link rel="stylesheet" href="stile.css" type="text/css">
 
 </head>
 

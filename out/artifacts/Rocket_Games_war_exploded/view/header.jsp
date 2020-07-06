@@ -11,11 +11,17 @@
     <title>Header</title>
 </head>
 <body>
+
 <header>
     <h1>
-        <img src="../images/logo.png">
-        MENUMENUMENU
+        <ul>
+            <li><a class="active" href="#home">Home</a></li>
+            <li><a href="#news">News</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a id="login" href="#about">Login</a></li>
+        </ul>
     </h1>
+
 </header>
 </body>
 </html>
