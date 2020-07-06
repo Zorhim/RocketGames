@@ -35,7 +35,7 @@ public class HomeServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<Prodotto> prodotti = prodottoDAO.doRetrieveAll(0,10);
         request.setAttribute("prodotti", prodotti);
-        RequestDispatcher requestDispatcher = request.getRequestDispatcher("WEB-INF/view/index.jsp");
+        RequestDispatcher requestDispatcher = request.getRequestDispatcher("view/index.jsp");
         requestDispatcher.forward(request, response);
     }
 

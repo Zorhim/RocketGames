@@ -13,7 +13,7 @@
 <body>
 <header>
     <h1>
-        <img src="/images/logo.png">
+        <img src="../images/logo.png">
         MENUMENUMENU
     </h1>
 </header>

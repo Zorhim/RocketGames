@@ -16,7 +16,7 @@
 
 <body>
 
-
+<jsp:include page="header.jsp"></jsp:include>
 
 <aside>
     <p>
@@ -192,6 +192,7 @@
     <input type="button" class="carrello" value="Aggiungi al carrello"></input>
 </section>
 
+<jsp:include page="footer.jsp"></jsp:include>
 
 </body>
 </html>
