@@ -26,6 +26,7 @@ public class CategoriaServlet extends HttpServlet {
         int id = Integer.parseInt(request.getParameter("id"));
         request.setAttribute("categoria", categorie.stream().filter(c -> c.getId() == id).findAny().get());
 
+        //Divisione dei prodotti per pagina e ordine
         String pagstr = request.getParameter("pag");
         int pag = pagstr == null ? 1 : Integer.parseInt(pagstr);
         request.setAttribute("pag", pag);

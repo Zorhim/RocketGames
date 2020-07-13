@@ -26,7 +26,7 @@ public class AdminUtentiServlet extends HttpServlet {
         UtenteDAO utenteDAO = new UtenteDAO();
         List<Utente> utenti = utenteDAO.doRetrieveAll(0, 10);
 
-
+        //Controlla se la richiesta è una rimozione, una modifica o semplicemente l'apertura della lista utenti
         if(request.getParameter("rimuovi") != null)
         {
             String idstr = request.getParameter("id");
