@@ -2,23 +2,33 @@ package model;
 
 import javax.swing.*;
 import javax.swing.plaf.IconUIResource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ProdottoDAO {
-    public List<Prodotto> doRetrieveAll(int offset, int limit){
-        try(Connection con = ConPool.getConnection()){
+
+    //Ordinamento prodotti per prezzo
+    public enum OrderBy {
+        DEFAULT(""), PREZZO_ASC("ORDER BY prezzoCent ASC"), PREZZO_DESC("ORDER BY prezzoCent DESC");
+        private String sql;
+
+        private OrderBy(String sql) {
+            this.sql = sql;
+        }
+    };
+
+    //Lista di "limit" prodotti in un intervallo "offset"
+    public List<Prodotto> doRetrieveAll(int offset, int limit) {
+        try (Connection con = ConPool.getConnection()) {
             PreparedStatement ps = con
                     .prepareStatement("SELECT id, nome, descrizione, prezzoCent FROM prodotto LIMIT ?, ?");
             ps.setInt(1, offset);
             ps.setInt(2, limit);
-            ResultSet rs = ps.executeQuery();
             ArrayList<Prodotto> prodotti = new ArrayList<>();
-            while (rs.next()){
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
                 Prodotto p = new Prodotto();
                 p.setId(rs.getInt(1));
                 p.setNome(rs.getString(2));
@@ -33,9 +43,205 @@ public class ProdottoDAO {
         }
     }
 
+    //Prodotto avente dato id
+    public Prodotto doRetrieveById(int id) {
+        try (Connection con = ConPool.getConnection()) {
+            PreparedStatement ps = con
+                    .prepareStatement("SELECT id, nome, descrizione, prezzoCent FROM prodotto WHERE id=?");
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Prodotto p = new Prodotto();
+                p.setId(rs.getInt(1));
+                p.setNome(rs.getString(2));
+                p.setDescrizione(rs.getString(3));
+                p.setPrezzoCent(rs.getLong(4));
+                p.setCategorie(getCategorie(con, p.getId()));
+                return p;
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //Conta il numero di prodotti in una categoria
+    public int countByCategoria(int categoria) {
+        try (Connection con = ConPool.getConnection()) {
+            PreparedStatement ps = con
+                    .prepareStatement("SELECT COUNT(*) FROM prodotto LEFT JOIN prodotto_categoria ON id=idprodotto WHERE idcategoria=?");
+            ps.setInt(1, categoria);
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            return rs.getInt(1);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //Lista dei prodotti appartenenti ad una data categoria
+    public List<Prodotto> doRetrieveByCategoria(int categoria, OrderBy orderBy, int offset, int limit) {
+        try (Connection con = ConPool.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(
+                    "SELECT id, nome, descrizione, prezzoCent FROM prodotto LEFT JOIN prodotto_categoria ON id=idprodotto WHERE idcategoria=? "
+                            + orderBy.sql + " LIMIT ?, ?");
+            ps.setInt(1, categoria);
+            ps.setInt(2, offset);
+            ps.setInt(3, limit);
+            ArrayList<Prodotto> prodotti = new ArrayList<>();
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Prodotto p = new Prodotto();
+                p.setId(rs.getInt(1));
+                p.setNome(rs.getString(2));
+                p.setDescrizione(rs.getString(3));
+                p.setPrezzoCent(rs.getLong(4));
+                p.setCategorie(getCategorie(con, p.getId()));
+                prodotti.add(p);
+            }
+            return prodotti;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //Trova i "limit" prodotti che hanno nel nome o nella descrizione la stringa data "against" in un intervallo "offset"
+    public List<Prodotto> doRetrieveByNomeOrDescrizione(String against, int offset, int limit) {
+        try (Connection con = ConPool.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(
+                    "SELECT id, nome, descrizione, prezzoCent FROM prodotto WHERE MATCH(nome, descrizione) AGAINST(?) LIMIT ?, ?");
+            ps.setString(1, against);
+            ps.setInt(2, offset);
+            ps.setInt(3, limit);
+            ArrayList<Prodotto> prodotti = new ArrayList<>();
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Prodotto p = new Prodotto();
+                p.setId(rs.getInt(1));
+                p.setNome(rs.getString(2));
+                p.setDescrizione(rs.getString(3));
+                p.setPrezzoCent(rs.getLong(4));
+                p.setCategorie(getCategorie(con, p.getId()));
+                prodotti.add(p);
+            }
+            return prodotti;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //Trova i "limit" prodotti che hanno nel nome la stringa data "against" in un intervallo "offset"
+    public List<Prodotto> doRetrieveByNome(String against, int offset, int limit) {
+        try (Connection con = ConPool.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(
+                    "SELECT id, nome, descrizione, prezzoCent FROM prodotto WHERE MATCH(nome) AGAINST(? IN BOOLEAN MODE) LIMIT ?, ?");
+            ps.setString(1, against);
+            ps.setInt(2, offset);
+            ps.setInt(3, limit);
+            ArrayList<Prodotto> prodotti = new ArrayList<>();
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Prodotto p = new Prodotto();
+                p.setId(rs.getInt(1));
+                p.setNome(rs.getString(2));
+                p.setDescrizione(rs.getString(3));
+                p.setPrezzoCent(rs.getLong(4));
+                p.setCategorie(getCategorie(con, p.getId()));
+                prodotti.add(p);
+            }
+            return prodotti;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //Inserisce un prodotto nel database e inserisce il suo id associato alla categoria a cui appartiene nella tabella prodotto_categoria
+    public void doSave(Prodotto prodotto) {
+        try (Connection con = ConPool.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(
+                    "INSERT INTO prodotto (nome, descrizione, prezzoCent) VALUES(?,?,?)",
+                    Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, prodotto.getNome());
+            ps.setString(2, prodotto.getDescrizione());
+            ps.setLong(3, prodotto.getPrezzoCent());
+            if (ps.executeUpdate() != 1) {
+                throw new RuntimeException("INSERT error.");
+            }
+            ResultSet rs = ps.getGeneratedKeys();
+            rs.next();
+            int id = rs.getInt(1);
+            prodotto.setId(id);
+
+            PreparedStatement psCa = con
+                    .prepareStatement("INSERT INTO prodotto_categoria (idprodotto, idcategoria) VALUES (?, ?)");
+            for (Categoria c : prodotto.getCategorie()) {
+                psCa.setInt(1, id);
+                psCa.setInt(2, c.getId());
+                psCa.addBatch();
+            }
+            psCa.executeBatch();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //Aggiorna le informazioni relative ad un prodotto e la sua categoria
+    public void doUpdate(Prodotto prodotto) {
+        try (Connection con = ConPool.getConnection()) {
+            PreparedStatement ps = con
+                    .prepareStatement("UPDATE prodotto SET nome=?, descrizione=?, prezzoCent=? WHERE id=?");
+            ps.setString(1, prodotto.getNome());
+            ps.setString(2, prodotto.getDescrizione());
+            ps.setLong(3, prodotto.getPrezzoCent());
+            ps.setInt(4, prodotto.getId());
+            if (ps.executeUpdate() != 1) {
+                throw new RuntimeException("UPDATE error.");
+            }
+
+            if (prodotto.getCategorie().isEmpty()) {
+                PreparedStatement psCaDel = con.prepareStatement("DELETE FROM prodotto_categoria WHERE idprodotto=?");
+                psCaDel.setInt(1, prodotto.getId());
+                psCaDel.executeUpdate();
+            } else {
+                PreparedStatement psCaDel = con
+                        .prepareStatement("DELETE FROM prodotto_categoria WHERE idprodotto=? AND idcategoria NOT IN ("
+                                + prodotto.getCategorie().stream().map(c -> String.valueOf(c.getId()))
+                                .collect(Collectors.joining(","))
+                                + ")");
+                psCaDel.setInt(1, prodotto.getId());
+                psCaDel.executeUpdate();
+
+                PreparedStatement psCa = con.prepareStatement(
+                        "INSERT IGNORE INTO prodotto_categoria (idprodotto, idcategoria) VALUES (?, ?)");
+                for (Categoria c : prodotto.getCategorie()) {
+                    psCa.setInt(1, prodotto.getId());
+                    psCa.setInt(2, c.getId());
+                    psCa.addBatch();
+                }
+                psCa.executeBatch();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //Elimina un prodotto dal database
+    public void doDelete(int id) {
+        try (Connection con = ConPool.getConnection()) {
+            PreparedStatement ps = con.prepareStatement("DELETE FROM prodotto WHERE id=?");
+            ps.setInt(1, id);
+            if (ps.executeUpdate() != 1) {
+                throw new RuntimeException("DELETE error.");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //Ottieni lalista delle categorie
     private static List<Categoria> getCategorie(Connection con, int idProdotto) throws SQLException {
-        PreparedStatement ps = con
-                .prepareStatement("SELECT id, nome, descrizione FROM categoria LEFT JOIN prodotto_categoria ON id=idcategoria WHERE idprodotto = ?");
+        PreparedStatement ps = con.prepareStatement(
+                "SELECT id, nome, descrizione FROM categoria LEFT JOIN prodotto_categoria ON id=idcategoria WHERE idprodotto=?");
         ps.setInt(1, idProdotto);
         ArrayList<Categoria> categorie = new ArrayList<>();
         ResultSet rs = ps.executeQuery();
@@ -48,6 +254,4 @@ public class ProdottoDAO {
         }
         return categorie;
     }
-
-
 }

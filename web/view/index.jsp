@@ -23,32 +23,40 @@
 </jsp:include>
 
 <aside>
-    <p>
-        Prova prova prova
-    </p>
+        <c:choose>
+            <c:when test="${utente == null}">
+                <a>Login</a>
+                        <card>
+                            <form action="Login" method="post">
+                                <input type="text" name="username" placeholder="Username"><br>
+                                <input type="password" name="password" placeholder="Password"><br>
+                                <input type="submit" value="Login">
+                            </form>
+                        </card>
+
+                <a href="RegistrazioneForm">Registrazione</a>
+            </c:when>
+            <c:otherwise>
+                <a style="font-weight: bolder">${utente.admin ? 'Admin' : 'Account'}</a><br>
+                    <c:if test="${utente.admin}">
+                       <a href="AdminCategoria">Aggiungi Categoria</a><br>
+                        <a href="AdminProdotto">Aggiungi Prodotto</a><br>
+                        <a href="todo">Ordini</a><br>
+                        <a href="AdminUtenti">Utenti</a><br>
+                        <hr style="margin:0px;">
+                    </c:if>
+                        ${utente.nome}<br>
+                    <a href="todo">Profilo</a><br>
+                    <a href="todo">I miei ordini</a>
+
+                        <card>
+                            <form action="Logout">
+                                <input type="submit" value="Logout">
+                            </form>
+                        </card>
+            </c:otherwise>
+        </c:choose>
 </aside>
-
-<section>
-    <h2 class="titolo">Prova</h2>
-    <p>
-        <img src="https://www.mezashite.net/wp-content/uploads/2020/06/aiparade029_premux_001_872.png">
-        Include i giochi principali e i DLC:
-
-        -Mafia: Definitive Edition ( 28/08/2020)
-        -Mafia II: Definitive Edition (release 19/05/2020)
-        -Mafia III: Definitive Edition ( release 19/05/2020)
-
-        Mafia: Definitive Edition
-        Scala i ranghi di una famiglia mafiosa nell'era del proibizionismo in quest'avventura ricreata da zero. Il tassista Tommy Angelo rimane invischiato nel mondo del crimine organizzato. Nonostante le remore verso la famiglia Salieri, ben presto capisce che la tentazione è troppo forte per resistere.
-
-        Mafia II: Definitive Edition
-        Impersona un gangster nell'epoca d'oro del crimine, in un'avventura rimasterizzata in alta definizione. L'eroe di guerra Vito Scaletta resta invischiato con la mafia per pagare i debiti di suo padre. Insieme al suo amico Joe, Vito cerca di dimostrare il proprio valore e scalare i ranghi della famiglia con crimini e conseguenze sempre più importanti.
-
-        Mafia III: Definitive Edition
-        Dopo anni di servizio in Vietnam, Lincoln Clay vede sterminare la sua famiglia adottiva, la mafia nera, dai gangster italiani. Lincoln costruisce una nuova famiglia sulle ceneri della precedente e va in cerca di vendetta.
-    </p>
-    <input type="button" class="carrello" value="Aggiungi al carrello"></input>
-</section>
 
     <c:forEach items="${prodotti}" var="prodotto">
         <section>
@@ -59,7 +67,6 @@
             <a href="Prodotto?id=<c:out value="${prodotto.id}"/>"><img src="images/prodotti/<c:out value="${prodotto.id}"/>.jpg"></a>
             <c:out value="${prodotto.descrizione}"/>
             <h4>Prezzo: <c:out value="${prodotto.prezzoEuro}" /> &euro;</h4>
-            <input type="button" class="carrello" id="${prodotto.id}" value="Aggiungi al carrello"></input>
         </p>
         </section>
     </c:forEach>

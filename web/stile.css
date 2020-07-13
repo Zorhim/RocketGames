@@ -90,8 +90,9 @@ aside {
 }
 footer {
     clear : both;
-    position : relative;
+    position : fixed;
     bottom : 0;
+    left: 0;
     background-color : white;
     border : #401A00 solid 1px;
     border-top : 5px ridge #FF6700;
@@ -136,10 +137,57 @@ li a:hover {
     background-color: #FF6700;
 }
 
+
 #login{
     display: none;
 }
 
+
+
+.dropdown {
+    float: right;
+    overflow: hidden;
+}
+
+.dropdown .dropbtn {
+    font-size: 16px;
+    border: none;
+    outline: none;
+    color: white;
+    padding: 14px 16px;
+    background-color: inherit;
+    font-family: inherit;
+    margin: 0;
+}
+
+ .dropdown:hover .dropbtn {
+    background-color: #FF6700;
+}
+
+.dropdown-content {
+    background-color: #FF6700;
+    display: none;
+    position: absolute;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    float: none;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+.dropdown-content a:hover {
+    background-color: #FF6700;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
 
 /*FINE MENU NAVIGAZIONE*/
 
