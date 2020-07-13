@@ -3,6 +3,7 @@ package model;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class UtenteDAO {
     public List<Utente> doRetrieveAll(int offset, int limit) {
@@ -116,4 +117,41 @@ public class UtenteDAO {
             throw new RuntimeException(e);
         }
     }
+
+    //Aggiorna le informazioni relative ad un utente
+    public void doUpdate(Utente utente) {
+        try (Connection con = ConPool.getConnection()) {
+            PreparedStatement ps = con
+                    .prepareStatement("UPDATE utente SET username=?, passwordhash=?, nome=?, email=? WHERE id=?");
+            ps.setString(1, utente.getUsername());
+            ps.setString(2, utente.getPasswordhash());
+            ps.setString(3, utente.getNome());
+            ps.setString(4, utente.getEmail());
+            ps.setInt(5, utente.getId());
+            if (ps.executeUpdate() != 1) {
+                throw new RuntimeException("UPDATE error.");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //Elimina un utente dal database
+    public void doDelete(int id) {
+        try (Connection con = ConPool.getConnection()) {
+            PreparedStatement ps = con.prepareStatement("DELETE FROM utente WHERE id=?");
+            ps.setInt(1, id);
+            if (ps.executeUpdate() != 1) {
+                throw new RuntimeException("DELETE error.");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+
+
+
+
 }

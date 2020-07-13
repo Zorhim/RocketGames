@@ -40,13 +40,14 @@
             <c:if test="${utente.admin}">
                 <a href="AdminCategoria">Aggiungi Categoria</a><br>
                 <a href="AdminProdotto">Aggiungi Prodotto</a><br>
-                <a href="todo">Ordini</a><br>
                 <a href="AdminUtenti">Utenti</a><br>
                 <hr style="margin:0px;">
             </c:if>
             ${utente.nome}<br>
-            <a href="todo">Profilo</a><br>
-            <a href="todo">I miei ordini</a>
+            <form action="ModificaUtente" method="post">
+                <input type="hidden" name="id" value="${utente.id}">
+                <input type="submit" name="modifica" value="Modifica">
+            </form><br>
 
             <card>
                 <form action="Logout">
@@ -97,7 +98,7 @@
             </div>
 
             <div col="1/3">
-                <form action="todo">
+                <form action="Acquisto">
                     <input type="submit" value="Completa acquisto">
                 </form>
             </div>

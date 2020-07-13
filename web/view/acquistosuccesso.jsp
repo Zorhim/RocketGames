@@ -1,25 +1,20 @@
 <%--
   Created by IntelliJ IDEA.
   User: scarp
-  Date: 01/07/2020
-  Time: 16:54
+  Date: 13/07/2020
+  Time: 21:43
   To change this template use File | Settings | File Templates.
 --%>
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-         pageEncoding="UTF-8"%><%@taglib prefix="c"
-                                         uri="http://java.sun.com/jsp/jstl/core"%>
-<html>
-
-<head>
-    <title>Rocket Games</title>
-    <link rel="stylesheet" href="stile.css" type="text/css">
+head>
+<title>Rocket Games</title>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/stile.css" type="text/css">
 
 </head>
 
 <body>
 
 <jsp:include page="header.jsp">
-    <jsp:param name="pageTitle" value="Home"/>
+    <jsp:param name="pageTitle" value="Acquisto avvenuto con successo."/>
 </jsp:include>
 
 <aside>
@@ -59,22 +54,11 @@
     </c:choose>
 </aside>
 
-    <c:forEach items="${prodotti}" var="prodotto">
-        <section>
-            <h2 class="titolo">
-                <a href="Prodotto?id=<c:out value="${prodotto.id}"/>"><c:out value="${prodotto.nome}" /></a>
-            </h2>
-        <p>
-            <a href="Prodotto?id=<c:out value="${prodotto.id}"/>"><img src="images/prodotti/<c:out value="${prodotto.id}"/>.jpg"></a>
-            <c:out value="${prodotto.descrizione}"/>
-            <h4>Prezzo: <c:out value="${prodotto.prezzoEuro}" /> &euro;</h4>
-        </p>
-        </section>
-    </c:forEach>
-
-
+<section>
+    <h2>Acquisto avvenuto con successo.</h2>
+    <h3>Puoi continuare a fare acquisti tramite il menu in alto</h3>
+</section>
 
 <jsp:include page="footer.jsp"></jsp:include>
-
 </body>
 </html>
